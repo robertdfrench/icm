@@ -1,4 +1,42 @@
-\documentclass
+\documentclass{amsbook}
+\usepackage{lipsum}
+
+\makeatletter
+\def\ps@spheadings{\ps@empty
+  \def\@evenhead{\normalfont\scriptsize
+      \rlap{\thepage}\hfil \leftmark{}{}}%
+  \def\@oddhead{\normalfont\scriptsize
+      \rightmark{}{}\hfil \llap{\thepage}}%
+  \let\@mkboth\markboth
+  \def\partmark{\@secmark\markboth\partrunhead\partname}%
+  \def\chaptermark{%
+    \@secmark\markboth\chapterrunhead{}}%
+  \def\sectionmark{%
+    \@secmark\markright\sectionrunhead\sectionname}%
+}
+\def\th@spplain{%
+  \let\thm@indent\relax
+  \thm@headfont{\bfseries}% heading font bold face
+  \let\thmhead\thmhead@plain \let\swappedhead\swappedhead@plain
+  \thm@preskip.5\baselineskip\@plus.2\baselineskip
+                                    \@minus.2\baselineskip
+  \thm@postskip\thm@preskip
+  \normalfont
+}
+\makeatother
+
+\theoremstyle{spplain}
+\newtheorem{theo}{Theorem}
+
+\pagestyle{spheadings}
+
 \begin{document}
-Hello
+
+\chapter{A test chapter}
+\section{A test section}
+\begin{theo}
+\lipsum[1]
+\end{theo}
+\lipsum[1-30]
+
 \end{document}
