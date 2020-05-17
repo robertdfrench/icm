@@ -1,3 +1,7 @@
+function add(a,b) {
+	return a + b
+}
+
 // returns [1,2,3,...,n]
 function CountingSequence(n) {
 	elements = [];
@@ -119,6 +123,11 @@ function Ball(center, radius) {
 }
 
 console.assert(Ball(0,0.1)(SineApproximation(10)(0)), "Tength degree approximation of sine(0) is ~ 0")
-console.log(SineApproximation(20)(3.14 / 2))
 console.assert(Ball(1,0.1)(SineApproximation(10)(3.14 / 2)), "Tength degree approximation of sine(3.14 / 2) is ~ 1")
 console.assert(Ball(0,0.1)(SineApproximation(10)(3.14)), "Tength degree approximation of sine(3.14) is ~ 0")
+
+function dot_product(a,b) {
+	return componentwise_multiply(a,b).reduce(add)
+}
+console.assert(dot_product([1,0,1],[0,1,0]) == 0, "Dot product of orthogonal vectors is zero")
+console.assert(dot_product([1,0,1],[1,0,1]) == 2, "Dot product of parallel vectors is the product of their magnitudes")
