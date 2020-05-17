@@ -73,7 +73,6 @@ console.assert(Monomial(2,3)(5) == 250, "2x^3 == 250 when x == 5");
 
 // returns f(x) := c1x + c2x^2 + c3x^3 + ... + cnx^n
 function Polynomial(coefficients) {
-	CountingSequence(coefficients.length).map(Monomial)
 	p = coefficients.map(Monomial);
 	return function(x) {
 		function sum(accumulator, currentMonomial) {
@@ -83,7 +82,43 @@ function Polynomial(coefficients) {
 	}
 }
 console.assert(Polynomial([])(1) == 0, "Null coefficient sequence means P(x) == 0")
-console.assert(Polynomial([1,1,1])(1) == 3, "1x^1 + 1x^2 + 1x^3 == 3 when x == 1")
-console.assert(Polynomial([1,1,1])(2) == 14, "1x^1 + 1x^2 + 1x^3 == 14 when x == 2")
-console.assert(Polynomial([1,1,1])(3) == 39, "1x^1 + 1x^2 + 1x^3 == 14 when x == 3")
+console.assert(Polynomial([0,1,1,1])(1) == 3, "1x^1 + 1x^2 + 1x^3 == 3 when x == 1")
+console.assert(Polynomial([0,1,1,1])(2) == 14, "1x^1 + 1x^2 + 1x^3 == 14 when x == 2")
+console.assert(Polynomial([0,1,1,1])(3) == 39, "1x^1 + 1x^2 + 1x^3 == 14 when x == 3")
 console.assert(Polynomial([3,4])(1) == 7, "3x^1 + 4x^2 == 7 when x == 1")
+
+function inverse(x) {
+	return 1/x
+}
+
+function componentwise_multiply(a,b) {
+	result = []
+	IndexSequence(a.length).map(function(i) {
+		result[i] = a[i] * b[i]
+	})
+	return result
+}
+
+function SineApproximation(n) {
+	magnitudes = CountingSequence(n)
+		.map(function(n) { return 2*n - 1 })
+		.map(factorial)
+		.map(inverse);
+	signs = CountingSequence(n)
+		.map(function(n) { return exponentiate(-1,n-1) });
+	coefficients = componentwise_multiply(magnitudes, signs);
+	return Polynomial(coefficients);
+}
+
+function Ball(center, radius) {
+	lower_bound = center - radius;
+	upper_bound = center + radius;
+	return function(point) {
+		return lower_bound < point && point < upper_bound
+	}
+}
+
+console.assert(Ball(0,0.1)(SineApproximation(10)(0)), "Tength degree approximation of sine(0) is ~ 0")
+console.log(SineApproximation(20)(3.14 / 2))
+console.assert(Ball(1,0.1)(SineApproximation(10)(3.14 / 2)), "Tength degree approximation of sine(3.14 / 2) is ~ 1")
+console.assert(Ball(0,0.1)(SineApproximation(10)(3.14)), "Tength degree approximation of sine(3.14) is ~ 0")
