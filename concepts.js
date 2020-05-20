@@ -1,35 +1,62 @@
+'use strict';
+
 function add(a,b) {
 	return a + b
 }
+console.assert(add(1,1) == 2, "1 + 1 is 2")
+console.assert(add(2,-2) == 0, "2 - 2 is 0")
+
+function multiply(a,b) {
+	return a * b
+}
+console.assert(multiply(0,5) == 0, "0 * 5 == 0")
+console.assert(multiply(1,5) == 5, "1 * 5 == 5")
+console.assert(multiply(5,1/5) == 1, "5 * 1/5 == 1")
+
+function increment(k) {
+	return add(k,1)
+}
+
+function negate(k) {
+	return multiply(-1,k)
+}
+
+function invert(k) {
+	return 1/k
+}
+
+// Grows the sequence to the desired length. By appending '0', we preserve the value of any
+// coefficient vectors that are passed in. I.e. Polynomial([1,2,3]) == Polynomial([1,2,3,0]).
+function grow_sequence(sequence, desired_length) {
+	if (sequence.length >= desired_length) {
+		return sequence;
+	}
+	return grow_sequence([sequence, 0].flat(), desired_length);
+}
+
+function Zeroes(n) {
+	return grow_sequence([], n);
+}
+
+function count(_, index) {
+	return index;
+}
+
+// returns [0,1,2,...,n-1]
+function Sequence(n) {
+	return grow_sequence([], n).map(count);
+}
+console.assert(Sequence(0).length == 0, "Null Sequence is empty");
+console.assert(Sequence(1).length == 1, "Sequence(1) has a singular element");
+console.assert(Sequence(1)[0] == 0, "Sequence(1) has the singular element 0");
 
 // returns [1,2,3,...,n]
 function CountingSequence(n) {
-	elements = [];
-	i = 1
-	while(i <= n) {
-		elements.push(i);
-		i = i + 1;
-	}
-	return elements;
+	return Sequence(n).map(increment);
 }
 console.assert(CountingSequence(0).length == 0, "Null CountingSequence is empty");
 console.assert(CountingSequence(1).length == 1, "CountingSequence(1) has a singular element");
 console.assert(CountingSequence(1)[0] == 1, "CountingSequence(1) has the singular element 1");
-
-
-// returns [0,1,2,...,n-1]
-function IndexSequence(n) {
-	elements = [];
-	n = n - 1;
-	while(n >= 0) {
-		elements.push(n);
-		n = n - 1;
-	}
-	return elements;
-}
-console.assert(IndexSequence(0).length == 0, "Null IndexSequence is empty");
-console.assert(IndexSequence(1).length == 1, "IndexSequence(1) has a singular element");
-console.assert(IndexSequence(1)[0] == 0, "IndexSequence(1) has the singular element 0");
 
 
 // returns base^exponent
@@ -78,12 +105,11 @@ console.assert(Monomial(2,3)(5) == 250, "2x^3 == 250 when x == 5");
 
 // returns f(x) := c1x + c2x^2 + c3x^3 + ... + cnx^n
 function Polynomial(coefficients) {
-	p = coefficients.map(Monomial);
 	return function(x) {
 		function sum(accumulator, currentMonomial) {
 			return accumulator + currentMonomial(x);
 		}
-		return p.reduce(sum, 0);
+		return coefficients.map(Monomial).reduce(sum, 0);
 	}
 }
 console.assert(Polynomial([])(1) == 0, "Null coefficient sequence means P(x) == 0")
@@ -97,47 +123,48 @@ function inverse(x) {
 }
 
 function componentwise_multiply(a,b) {
-	result = []
-	IndexSequence(a.length).map(function(i) {
-		result[i] = a[i] * b[i]
+	return Sequence(a.length).map(function(i) {
+		return a[i] * b[i]
 	})
-	return result
 }
 
 function SineApproximation(n) {
-	magnitudes = CountingSequence(n)
-		.map(Odd)
-		.map(factorial)
-		.map(inverse);
-	signs = CountingSequence(n)
-		.map(function(n) { return exponentiate(-1,n-1) });
-	coefficients = componentwise_multiply(magnitudes, signs)
-		.flatMap(function(c) { return [0,c] });
-
-	return Polynomial(coefficients);
+	function magnitudes() {
+		return Sequence(n)
+			.map(Odd)
+			.map(factorial)
+			.map(inverse);
+	}
+	function signs() {
+		return Sequence(n)
+			.map(function(n) { return exponentiate(-1,n) });
+	}
+	function coefficients() {
+		return componentwise_multiply(magnitudes(), signs())
+			.flatMap(function(c) { return [0,c] });
+	}
+	return Polynomial(coefficients());
 }
 
 function Odd(n) {
-	return 2 * n - 1;
+	return 2 * n + 1;
 }
 	
 
 function Ball(center, radius) {
-	lower_bound = center - radius;
-	upper_bound = center + radius;
 	return function(point) {
-		return lower_bound < point && point < upper_bound
+		return (center - radius) < point && point < (center + radius);
 	}
 }
 
-sin = SineApproximation(20)
+function sin(x) {
+	return SineApproximation(20)(x);
+}
 console.assert(Ball(0,0.1)(sin(0)), "Twentieth degree approximation of sine(0) is ~ 0")
 console.assert(Ball(1,0.1)(sin(3.14 / 2)), "Twentieth degree approximation of sine(3.14 / 2) is ~ 1")
 console.assert(Ball(0,0.1)(sin(3.14)), "Twentieth degree approximation of sine(3.14) is ~ 0")
 console.assert(Ball(-1,0.1)(sin(3.14 * 3/2)), "Twentieth degree approximation of sine(3/2 * 3.14) is ~ -1")
 console.assert(Ball(0,0.1)(sin(3.14 * 2)), "Twentieth degree approximation of sine(2 * 3.14) is ~ 0")
-
-sin = SineApproximation(10)
 
 function dot_product(a,b) {
 	return componentwise_multiply(a,b).reduce(add)
