@@ -5,9 +5,10 @@ function add(a,b) {
 // returns [1,2,3,...,n]
 function CountingSequence(n) {
 	elements = [];
-	while(n > 0) {
-		elements.push(n);
-		n = n - 1;
+	i = 1
+	while(i <= n) {
+		elements.push(i);
+		i = i + 1;
 	}
 	return elements;
 }
@@ -105,14 +106,21 @@ function componentwise_multiply(a,b) {
 
 function SineApproximation(n) {
 	magnitudes = CountingSequence(n)
-		.map(function(n) { return 2*n - 1 })
+		.map(Odd)
 		.map(factorial)
 		.map(inverse);
 	signs = CountingSequence(n)
 		.map(function(n) { return exponentiate(-1,n-1) });
-	coefficients = componentwise_multiply(magnitudes, signs);
+	coefficients = componentwise_multiply(magnitudes, signs)
+		.flatMap(function(c) { return [0,c] });
+
 	return Polynomial(coefficients);
 }
+
+function Odd(n) {
+	return 2 * n - 1;
+}
+	
 
 function Ball(center, radius) {
 	lower_bound = center - radius;
@@ -122,9 +130,14 @@ function Ball(center, radius) {
 	}
 }
 
-console.assert(Ball(0,0.1)(SineApproximation(10)(0)), "Tength degree approximation of sine(0) is ~ 0")
-console.assert(Ball(1,0.1)(SineApproximation(10)(3.14 / 2)), "Tength degree approximation of sine(3.14 / 2) is ~ 1")
-console.assert(Ball(0,0.1)(SineApproximation(10)(3.14)), "Tength degree approximation of sine(3.14) is ~ 0")
+sin = SineApproximation(20)
+console.assert(Ball(0,0.1)(sin(0)), "Twentieth degree approximation of sine(0) is ~ 0")
+console.assert(Ball(1,0.1)(sin(3.14 / 2)), "Twentieth degree approximation of sine(3.14 / 2) is ~ 1")
+console.assert(Ball(0,0.1)(sin(3.14)), "Twentieth degree approximation of sine(3.14) is ~ 0")
+console.assert(Ball(-1,0.1)(sin(3.14 * 3/2)), "Twentieth degree approximation of sine(3/2 * 3.14) is ~ -1")
+console.assert(Ball(0,0.1)(sin(3.14 * 2)), "Twentieth degree approximation of sine(2 * 3.14) is ~ 0")
+
+sin = SineApproximation(10)
 
 function dot_product(a,b) {
 	return componentwise_multiply(a,b).reduce(add)
