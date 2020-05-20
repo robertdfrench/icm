@@ -177,3 +177,39 @@ function apply_matrix(matrix, vector) {
 console.assert(apply_matrix([[1,0],[0,1]],[1,2]) == '1,2', "Identity matrix preserves vector")
 console.assert(apply_matrix([[0,0],[0,0]],[1,2]) == '0,0', "Zero matrix yields zero vector")
 console.assert(apply_matrix([[0,1],[1,0]],[1,2]) == '2,1', "Permute matrix permutes vector")
+
+function identity(x) {
+	return x;
+}
+
+function format_polynomial(coefficients) {
+	return coefficients.map(format_monomial).filter(identity).join(" + ") || 0
+}
+
+function format_monomial(coefficient, exponent) {
+	if (format_scalar(coefficient)) {
+		if (exponent == 0) return coefficient;
+		if (exponent == 1) return format_scalar(coefficient);
+		return format_scalar(coefficient) + "^" + exponent;
+	}
+}
+
+function format_scalar(coefficient) {
+	if (coefficient == 0) return undefined;
+	if (coefficient == 1) return "x";
+	return coefficient + "x";
+}
+
+function DerivativeMatrix(length) {
+	return CountingSequence(length).map(function(i) {
+		return Sequence(length).map(function(j) {
+			return i * (j == i);
+		});
+	});
+}
+
+function Derivative(coefficients) {
+	return apply_matrix(DerivativeMatrix(coefficients.length), coefficients)
+}
+
+console.log("d/dx(" + format_polynomial([1,1,2]) + ") = " + format_polynomial(Derivative([1,1,2])))
