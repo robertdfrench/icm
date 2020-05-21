@@ -213,3 +213,35 @@ function Derivative(coefficients) {
 }
 
 console.log("d/dx(" + format_polynomial([1,1,2]) + ") = " + format_polynomial(Derivative([1,1,2])))
+
+function AntiderivativeMatrix(length) {
+	return Sequence(length).map(function(i) {
+		return CountingSequence(length).map(function(j) {
+			return (j == i) / j;
+		})
+	})
+}
+function Antiderivative(coefficients) {
+	return apply_matrix(
+		AntiderivativeMatrix(coefficients.length + 1),
+		grow_sequence(coefficients, coefficients.length + 1)
+	)
+}
+console.log("D^-1(" + format_polynomial([1,1,2]) + ") = " + format_polynomial(Antiderivative([1,1,2])))
+
+function transpose(matrix) {
+	return matrix.map(function(column, i) {
+		return column.map(function(_,j) {
+			return matrix[j][i]
+		})
+	})
+}
+console.log(transpose([[1,2],[3,4]]))
+
+function compose_matrix(A, B) {
+	return transpose(transpose(B).map(function(vector) {
+		return apply_matrix(A, vector)
+	}))
+}
+console.log(compose_matrix([[1,2],[3,4]],[[2,0],[0,2]]))
+console.log(compose_matrix(DerivativeMatrix(4), AntiderivativeMatrix(4)))
