@@ -1,64 +1,5 @@
 'use strict';
 
-function add(a,b) {
-	return a + b
-}
-console.assert(add(1,1) == 2, "1 + 1 is 2")
-console.assert(add(2,-2) == 0, "2 - 2 is 0")
-
-function multiply(a,b) {
-	return a * b
-}
-console.assert(multiply(0,5) == 0, "0 * 5 == 0")
-console.assert(multiply(1,5) == 5, "1 * 5 == 5")
-console.assert(multiply(5,1/5) == 1, "5 * 1/5 == 1")
-
-function increment(k) {
-	return add(k,1)
-}
-
-function negate(k) {
-	return multiply(-1,k)
-}
-
-function invert(k) {
-	return 1/k
-}
-
-// Grows the sequence to the desired length. By appending '0', we preserve the value of any
-// coefficient vectors that are passed in. I.e. Polynomial([1,2,3]) == Polynomial([1,2,3,0]).
-function grow_sequence(sequence, desired_length) {
-	if (sequence.length >= desired_length) {
-		return sequence;
-	}
-	return grow_sequence([sequence, 0].flat(), desired_length);
-}
-
-function Zeroes(n) {
-	return grow_sequence([], n);
-}
-
-function count(_, index) {
-	return index;
-}
-
-// returns [0,1,2,...,n-1]
-function Sequence(n) {
-	return grow_sequence([], n).map(count);
-}
-console.assert(Sequence(0).length == 0, "Null Sequence is empty");
-console.assert(Sequence(1).length == 1, "Sequence(1) has a singular element");
-console.assert(Sequence(1)[0] == 0, "Sequence(1) has the singular element 0");
-
-// returns [1,2,3,...,n]
-function CountingSequence(n) {
-	return Sequence(n).map(increment);
-}
-console.assert(CountingSequence(0).length == 0, "Null CountingSequence is empty");
-console.assert(CountingSequence(1).length == 1, "CountingSequence(1) has a singular element");
-console.assert(CountingSequence(1)[0] == 1, "CountingSequence(1) has the singular element 1");
-
-
 // returns base^exponent
 //
 // Need to clarify language here: what is the best verb to use? Is 'exponentiate' really the best
@@ -119,12 +60,6 @@ function inverse(x) {
 	return 1/x
 }
 
-function componentwise_multiply(a,b) {
-	return Sequence(a.length).map(function(i) {
-		return a[i] * b[i]
-	})
-}
-
 function SineApproximation(n) {
 	function magnitudes() {
 		return Sequence(n)
@@ -163,20 +98,6 @@ console.assert(Ball(0,0.1)(sin(3.14)), "Twentieth degree approximation of sine(3
 console.assert(Ball(-1,0.1)(sin(3.14 * 3/2)), "Twentieth degree approximation of sine(3/2 * 3.14) is ~ -1")
 console.assert(Ball(0,0.1)(sin(3.14 * 2)), "Twentieth degree approximation of sine(2 * 3.14) is ~ 0")
 
-function dot_product(a,b) {
-	return componentwise_multiply(a,b).reduce(add)
-}
-console.assert(dot_product([1,0,1],[0,1,0]) == 0, "Dot product of orthogonal vectors is zero")
-console.assert(dot_product([1,0,1],[1,0,1]) == 2, "Dot product of parallel vectors is the product of their magnitudes")
-
-function apply_matrix(matrix, vector) {
-	return matrix.map(function(column) {
-		return dot_product(column, vector)
-	})
-}
-console.assert(apply_matrix([[1,0],[0,1]],[1,2]) == '1,2', "Identity matrix preserves vector")
-console.assert(apply_matrix([[0,0],[0,0]],[1,2]) == '0,0', "Zero matrix yields zero vector")
-console.assert(apply_matrix([[0,1],[1,0]],[1,2]) == '2,1', "Permute matrix permutes vector")
 
 function identity(x) {
 	return x;
@@ -212,8 +133,6 @@ function Derivative(coefficients) {
 	return apply_matrix(DerivativeMatrix(coefficients.length), coefficients)
 }
 
-console.log("d/dx(" + format_polynomial([1,1,2]) + ") = " + format_polynomial(Derivative([1,1,2])))
-
 function AntiderivativeMatrix(length) {
 	return Sequence(length).map(function(i) {
 		return CountingSequence(length).map(function(j) {
@@ -227,21 +146,3 @@ function Antiderivative(coefficients) {
 		grow_sequence(coefficients, coefficients.length + 1)
 	)
 }
-console.log("D^-1(" + format_polynomial([1,1,2]) + ") = " + format_polynomial(Antiderivative([1,1,2])))
-
-function transpose(matrix) {
-	return matrix.map(function(column, i) {
-		return column.map(function(_,j) {
-			return matrix[j][i]
-		})
-	})
-}
-console.log(transpose([[1,2],[3,4]]))
-
-function compose_matrix(A, B) {
-	return transpose(transpose(B).map(function(vector) {
-		return apply_matrix(A, vector)
-	}))
-}
-console.log(compose_matrix([[1,2],[3,4]],[[2,0],[0,2]]))
-console.log(compose_matrix(DerivativeMatrix(4), AntiderivativeMatrix(4)))
